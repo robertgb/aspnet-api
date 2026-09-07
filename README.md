@@ -15,6 +15,8 @@ Projeto ASP.NET Core 10 com dois fluxos Docker:
 
 O `Program.cs` permanece como ponto de entrada enxuto. Registros de casos de uso ficam em `Core/Application/DependencyInjection.cs`, registros de banco e repositórios em `Infrastructure/DependencyInjection.cs` e registros HTTP em `Presentation/DependencyInjection.cs`; o pipeline fica em `Presentation/ApplicationBuilderExtensions.cs`.
 
+As classes e métodos do código-fonte mantido pelo projeto possuem documentação XML. O build gera o arquivo `aspnet-api.xml`, e o Swagger o utiliza para exibir descrições dos endpoints.
+
 A aplicação usa a porta `8080` dentro do container. A porta externa é definida pelo Compose ou pelo comando `docker run`.
 
 ## VS Code

@@ -3,23 +3,27 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace aspnet_api.Presentation.Controllers;
 
+/// <summary>Expõe as operações HTTP de clientes.</summary>
 [ApiController]
 [Route("customers")]
 public sealed class CustomerController : ControllerBase
 {
     private readonly CustomerService service;
 
+    /// <summary>Inicializa o controller com o serviço de clientes.</summary>
     public CustomerController(CustomerService service)
     {
         this.service = service;
     }
 
+    /// <summary>Retorna todos os clientes.</summary>
     [HttpGet]
     public async Task<ActionResult<IReadOnlyCollection<CustomerResponse>>> GetAll(CancellationToken cancellationToken)
     {
         return Ok(await service.GetAllAsync(cancellationToken));
     }
 
+    /// <summary>Retorna um cliente pelo identificador.</summary>
     [HttpGet("{id:guid}")]
     public async Task<ActionResult<CustomerResponse>> GetById(Guid id, CancellationToken cancellationToken)
     {
@@ -27,6 +31,7 @@ public sealed class CustomerController : ControllerBase
         return customer is null ? NotFound() : Ok(customer);
     }
 
+    /// <summary>Cria um cliente.</summary>
     [HttpPost]
     public async Task<ActionResult<CustomerResponse>> Create(CreateCustomerRequest request, CancellationToken cancellationToken)
     {
@@ -45,6 +50,7 @@ public sealed class CustomerController : ControllerBase
         }
     }
 
+    /// <summary>Atualiza um cliente.</summary>
     [HttpPut("{id:guid}")]
     public async Task<ActionResult<CustomerResponse>> Update(Guid id, UpdateCustomerRequest request, CancellationToken cancellationToken)
     {
@@ -63,6 +69,7 @@ public sealed class CustomerController : ControllerBase
         }
     }
 
+    /// <summary>Remove um cliente.</summary>
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
     {

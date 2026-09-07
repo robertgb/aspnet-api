@@ -2,6 +2,7 @@ using aspnet_api.Core.Domain.Customers;
 
 namespace aspnet_api.Core.Application.Customers;
 
+/// <summary>Orquestra os casos de uso de clientes.</summary>
 public sealed class CustomerService
 {
     private readonly ICustomerRepository repository;
@@ -11,12 +12,14 @@ public sealed class CustomerService
         this.repository = repository;
     }
 
+    /// <summary>Lista todos os clientes.</summary>
     public async Task<IReadOnlyCollection<CustomerResponse>> GetAllAsync(CancellationToken cancellationToken = default)
     {
         var customers = await repository.GetAllAsync(cancellationToken);
         return customers.Select(CustomerResponse.FromDomain).ToArray();
     }
 
+    /// <summary>Busca um cliente pelo identificador.</summary>
     public async Task<CustomerResponse?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         return await repository.GetByIdAsync(id, cancellationToken) is { } customer
@@ -24,6 +27,7 @@ public sealed class CustomerService
             : null;
     }
 
+    /// <summary>Cria um cliente e impede e-mails duplicados.</summary>
     public async Task<CustomerResponse> CreateAsync(CreateCustomerRequest request, CancellationToken cancellationToken = default)
     {
         var customer = Customer.Create(request.Name, request.Email);
@@ -36,6 +40,7 @@ public sealed class CustomerService
         return CustomerResponse.FromDomain(await repository.AddAsync(customer, cancellationToken));
     }
 
+    /// <summary>Atualiza um cliente existente.</summary>
     public async Task<CustomerResponse?> UpdateAsync(Guid id, UpdateCustomerRequest request, CancellationToken cancellationToken = default)
     {
         var customer = await repository.GetByIdAsync(id, cancellationToken);
@@ -56,17 +61,22 @@ public sealed class CustomerService
         return CustomerResponse.FromDomain(customer);
     }
 
+    /// <summary>Remove um cliente.</summary>
     public Task<bool> DeleteAsync(Guid id, CancellationToken cancellationToken = default)
     {
         return repository.DeleteAsync(id, cancellationToken);
     }
 }
 
+/// <summary>Dados necessários para criar um cliente.</summary>
 public sealed record CreateCustomerRequest(string Name, string Email);
+/// <summary>Dados permitidos na atualização de um cliente.</summary>
 public sealed record UpdateCustomerRequest(string Name, string Email);
 
+/// <summary>Representação de saída de um cliente.</summary>
 public sealed record CustomerResponse(Guid Id, string Name, string Email, DateTime CreatedAt)
 {
+    /// <summary>Converte uma entidade de domínio para resposta da API.</summary>
     public static CustomerResponse FromDomain(Customer customer)
     {
         return new CustomerResponse(customer.Id, customer.Name, customer.Email, customer.CreatedAt);

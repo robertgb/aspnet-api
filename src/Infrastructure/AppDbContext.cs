@@ -4,13 +4,18 @@ using aspnet_api.Core.Domain.Products;
 
 namespace aspnet_api.Infrastructure;
 
+/// <summary>Contexto EF Core para persistência PostgreSQL.</summary>
 public class AppDbContext : DbContext
 {
+    /// <summary>Inicializa o contexto com as opções configuradas pela aplicação.</summary>
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
+    /// <summary>Conjunto persistido de clientes.</summary>
     public DbSet<Customer> Customers => Set<Customer>();
+    /// <summary>Conjunto persistido de produtos.</summary>
     public DbSet<Product> Products => Set<Product>();
 
+    /// <summary>Configura chaves, índices e tipos relacionais do domínio.</summary>
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Customer>(entity =>
