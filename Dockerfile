@@ -1,12 +1,14 @@
 # Stage 1: Runtime Base (usado para dev e produção)
-FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
+FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS base
 WORKDIR /app
 EXPOSE 8080
 ENV ASPNETCORE_URLS=http://0.0.0.0:8080
 
 # Stage 2: SDK para Build e Desenvolvimento
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS dev
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS dev
 WORKDIR /src
+RUN dotnet tool install --tool-path /tools dotnet-ef --version 10.0.11
+ENV PATH="/tools:${PATH}"
 COPY ["src/aspnet-api.csproj", "./"]
 RUN dotnet restore
 COPY src/ .

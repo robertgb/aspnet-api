@@ -1,5 +1,4 @@
 {
-  "dotnet.defaultSolution": "src/aspnet-api.csproj",
   "files.exclude": {
     "**/bin": true,
     "**/obj": true

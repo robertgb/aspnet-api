@@ -8,6 +8,7 @@ public static class ApplicationBuilderExtensions
         {
             app.UseSwagger();
             app.UseSwaggerUI();
+            app.UseDeveloperExceptionPage();
         }
 
         app.MapControllers();

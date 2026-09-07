@@ -11,39 +11,43 @@ public sealed class ProductService
         this.repository = repository;
     }
 
-    public IReadOnlyCollection<ProductResponse> GetAll()
+    public async Task<IReadOnlyCollection<ProductResponse>> GetAllAsync(CancellationToken cancellationToken = default)
     {
-        return repository.GetAll().Select(ProductResponse.FromDomain).ToArray();
+        var products = await repository.GetAllAsync(cancellationToken);
+        return products.Select(ProductResponse.FromDomain).ToArray();
     }
 
-    public ProductResponse? GetById(Guid id)
+    public async Task<ProductResponse?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        return repository.GetById(id) is { } product
+        return await repository.GetByIdAsync(id, cancellationToken) is { } product
             ? ProductResponse.FromDomain(product)
             : null;
     }
 
-    public ProductResponse Create(CreateProductRequest request)
+    public async Task<ProductResponse> CreateAsync(CreateProductRequest request, CancellationToken cancellationToken = default)
     {
-        var product = Product.Create(request.Name, request.Description, request.Price);
-        return ProductResponse.FromDomain(repository.Add(product));
+        var product = await repository.AddAsync(Product.Create(request.Name, request.Description, request.Price), cancellationToken);
+        return ProductResponse.FromDomain(product);
     }
 
-    public ProductResponse? Update(Guid id, UpdateProductRequest request)
+    public async Task<ProductResponse?> UpdateAsync(Guid id, UpdateProductRequest request, CancellationToken cancellationToken = default)
     {
-        var product = repository.GetById(id);
+        var product = await repository.GetByIdAsync(id, cancellationToken);
+
         if (product is null)
         {
             return null;
         }
 
         product.Update(request.Name, request.Description, request.Price);
+
+        await repository.SaveChangesAsync(cancellationToken);
         return ProductResponse.FromDomain(product);
     }
 
-    public bool Delete(Guid id)
+    public Task<bool> DeleteAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        return repository.Delete(id);
+        return repository.DeleteAsync(id, cancellationToken);
     }
 }
 

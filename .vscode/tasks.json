@@ -12,7 +12,7 @@
     {
       "label": "docker: dev",
       "type": "shell",
-      "command": "docker compose up --build webapi",
+      "command": "docker compose up --build aspnet-api-application",
       "options": {
         "cwd": "${workspaceFolder}"
       },
@@ -21,7 +21,7 @@
     {
       "label": "docker: dev background",
       "type": "shell",
-      "command": "docker compose up --build -d webapi",
+      "command": "docker compose up --build -d aspnet-api-application",
       "options": {
         "cwd": "${workspaceFolder}"
       },

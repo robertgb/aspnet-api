@@ -1,9 +1,13 @@
 services:
-  webapi:
+  aspnet-api-application:
+    container_name: aspnet-api-application
     build:
       context: .
       dockerfile: Dockerfile
       target: dev
+    depends_on:
+      aspnet-api-postgres:
+        condition: service_healthy
     ports:
       - "5000:8080"
     volumes:
@@ -13,3 +17,33 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: Development
       ASPNETCORE_URLS: http://0.0.0.0:8080
+      ConnectionStrings__DefaultConnection: Host=aspnet-api-postgres;Port=5432;Database=MyDatabase;Username=postgres;Password=your_password
+    networks:
+      - aspnet-api-network
+
+  aspnet-api-postgres:
+    container_name: aspnet-api-postgres
+    image: postgres:15.2
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: your_password
+      POSTGRES_DB: MyDatabase
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d MyDatabase"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    ports:
+      - "5432:5432"
+    volumes:
+      - aspnet-api-postgres-data:/var/lib/postgresql/data
+    networks:
+      - aspnet-api-network
+
+networks:
+  aspnet-api-network:
+    name: aspnet-api-network
+    driver: bridge
+
+volumes:
+  aspnet-api-postgres-data:

@@ -8,3 +8,5 @@ Orquestra o fluxo de dados e interações entre a camada de apresentação e a d
 - **DTOs (Data Transfer Objects):** objetos de entrada e saída para evitar expor entidades de domínio.
 - **Interfaces de serviços externos:** contratos para e-mail, pagamentos, mensageria e outros gateways.
 - **Validações de entrada:** validação dos dados recebidos antes do processamento dos casos de uso.
+
+Os serviços de aplicação são registrados em `DependencyInjection.cs` e dependem somente das interfaces definidas no Domain.

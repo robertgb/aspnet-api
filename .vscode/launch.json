@@ -6,7 +6,7 @@
       "type": "coreclr",
       "request": "launch",
       "preLaunchTask": "build: local",
-      "program": "${workspaceFolder}/src/bin/Debug/net8.0/aspnet-api.dll",
+      "program": "${workspaceFolder}/src/bin/Debug/net10.0/aspnet-api.dll",
       "args": [],
       "cwd": "${workspaceFolder}/src",
       "stopAtEntry": false,

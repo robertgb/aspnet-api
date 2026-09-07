@@ -1,19 +1,20 @@
-using aspnet_api.Core.Application.Customers;
-using aspnet_api.Core.Application.Products;
 using aspnet_api.Core.Domain.Customers;
 using aspnet_api.Core.Domain.Products;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace aspnet_api.Infrastructure;
 
 public static class DependencyInjection
 {
-    public static IServiceCollection AddApplicationServices(this IServiceCollection services)
+    public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddSingleton<ICustomerRepository, InMemoryCustomerRepository>();
-        services.AddScoped<CustomerService>();
-        services.AddSingleton<IProductRepository, InMemoryProductRepository>();
-        services.AddScoped<ProductService>();
+        services.AddDbContext<AppDbContext>(options =>
+            options.UseNpgsql(configuration.GetConnectionString("DefaultConnection")));
+
+        services.AddScoped<ICustomerRepository, EfCustomerRepository>();
+        services.AddScoped<IProductRepository, EfProductRepository>();
 
         return services;
     }

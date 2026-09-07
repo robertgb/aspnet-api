@@ -1,6 +1,6 @@
 # ASP.NET Core com Docker
 
-Projeto ASP.NET Core 8 com dois fluxos Docker:
+Projeto ASP.NET Core 10 com dois fluxos Docker:
 
 - desenvolvimento com `dotnet watch` e hot reload;
 - produção com imagem multi-stage contendo apenas o runtime e a aplicação publicada.
@@ -13,7 +13,7 @@ Projeto ASP.NET Core 8 com dois fluxos Docker:
 - `Makefile`: atalhos para os comandos mais usados.
 - `.gitignore`: exclui artefatos de build, IDE e configurações locais.
 
-O `Program.cs` permanece como ponto de entrada enxuto. Registros de dependência ficam em `Infrastructure/DependencyInjection.cs` e `Presentation/DependencyInjection.cs`; o pipeline HTTP fica em `Presentation/ApplicationBuilderExtensions.cs`.
+O `Program.cs` permanece como ponto de entrada enxuto. Registros de casos de uso ficam em `Core/Application/DependencyInjection.cs`, registros de banco e repositórios em `Infrastructure/DependencyInjection.cs` e registros HTTP em `Presentation/DependencyInjection.cs`; o pipeline fica em `Presentation/ApplicationBuilderExtensions.cs`.
 
 A aplicação usa a porta `8080` dentro do container. A porta externa é definida pelo Compose ou pelo comando `docker run`.
 
@@ -55,6 +55,9 @@ O Compose monta `./src` em `/src`. Alterações nos arquivos dentro de `src/` s�
 No container, o watcher ignora o `launchSettings.json` e usa `ASPNETCORE_URLS=http://0.0.0.0:8080`.
 Os diretórios `bin/` e `obj/` usam volumes internos do container, evitando conflitos de permissão com o build local.
 
+O PostgreSQL fica disponível no serviço `aspnet-api-postgres` e usa a porta `5432`. A aplicação usa esse hostname dentro da rede Docker; localmente, `appsettings.json` usa `localhost`.
+Os dados do PostgreSQL ficam no volume Docker `aspnet-api-postgres-data` e sobrevivem a `docker compose down`. Remova esse volume apenas quando quiser apagar o banco.
+
 Para ver os logs:
 
 ```bash
@@ -72,7 +75,7 @@ make down
 Gere a imagem final, usando o estágio `final`:
 
 ```bash
-docker build --target final -t aspnet-webapi:production .
+docker build --target final -t aspnet-api-application:production .
 ```
 
 Ou:
@@ -84,7 +87,7 @@ make prod-build
 Execute a imagem:
 
 ```bash
-docker run --rm -p 8080:8080 --name aspnet-webapi aspnet-webapi:production
+docker run --rm -p 8080:8080 --name aspnet-api-application aspnet-api-application:production
 ```
 
 Ou:
@@ -98,7 +101,7 @@ A API de produção ficará disponível em `http://localhost:8080`.
 Em um servidor, você pode publicar outra porta externa sem alterar a aplicação:
 
 ```bash
-docker run --rm -p 80:8080 --name aspnet-webapi aspnet-webapi:production
+docker run --rm -p 80:8080 --name aspnet-api-application aspnet-api-application:production
 ```
 
 Nesse exemplo, o acesso externo será feito pela porta `80`, enquanto a aplicação continuará ouvindo na porta `8080` dentro do container.
@@ -135,7 +138,29 @@ Exemplo de produto:
 }
 ```
 
-Os clientes e produtos usam repositórios em memória nesta etapa. Os dados são perdidos quando a aplicação é reiniciada.
+Clientes e produtos são persistidos no PostgreSQL. As migrations ficam em `src/Migrations` e são aplicadas pelo comando `make migrate`.
+
+## Entity Framework e migrations
+
+O projeto já inclui `AppDbContext`, o provider PostgreSQL e a ferramenta `dotnet-ef` no estágio de desenvolvimento do Docker.
+
+Para criar e aplicar uma migration:
+
+```bash
+make migrate MIGRATION_NAME=create_table_products
+```
+
+Esse comando:
+
+1. aguarda o PostgreSQL ficar saudável;
+2. cria os arquivos em `src/Migrations`;
+3. aplica a migration no banco `MyDatabase`.
+
+Para adicionar apenas um pacote NuGet:
+
+```bash
+make add-package PACKAGE_NAME=Nome.Do.Pacote
+```
 
 ## Comandos de manutenção
 

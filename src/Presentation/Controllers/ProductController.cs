@@ -15,24 +15,24 @@ public sealed class ProductController : ControllerBase
     }
 
     [HttpGet]
-    public ActionResult<IReadOnlyCollection<ProductResponse>> GetAll()
+    public async Task<ActionResult<IReadOnlyCollection<ProductResponse>>> GetAll(CancellationToken cancellationToken)
     {
-        return Ok(service.GetAll());
+        return Ok(await service.GetAllAsync(cancellationToken));
     }
 
     [HttpGet("{id:guid}")]
-    public ActionResult<ProductResponse> GetById(Guid id)
+    public async Task<ActionResult<ProductResponse>> GetById(Guid id, CancellationToken cancellationToken)
     {
-        var product = service.GetById(id);
+        var product = await service.GetByIdAsync(id, cancellationToken);
         return product is null ? NotFound() : Ok(product);
     }
 
     [HttpPost]
-    public ActionResult<ProductResponse> Create(CreateProductRequest request)
+    public async Task<ActionResult<ProductResponse>> Create(CreateProductRequest request, CancellationToken cancellationToken)
     {
         try
         {
-            var product = service.Create(request);
+            var product = await service.CreateAsync(request, cancellationToken);
             return CreatedAtAction(nameof(GetById), new { id = product.Id }, product);
         }
         catch (ArgumentException exception)
@@ -42,11 +42,11 @@ public sealed class ProductController : ControllerBase
     }
 
     [HttpPut("{id:guid}")]
-    public ActionResult<ProductResponse> Update(Guid id, UpdateProductRequest request)
+    public async Task<ActionResult<ProductResponse>> Update(Guid id, UpdateProductRequest request, CancellationToken cancellationToken)
     {
         try
         {
-            var product = service.Update(id, request);
+            var product = await service.UpdateAsync(id, request, cancellationToken);
             return product is null ? NotFound() : Ok(product);
         }
         catch (ArgumentException exception)
@@ -56,8 +56,8 @@ public sealed class ProductController : ControllerBase
     }
 
     [HttpDelete("{id:guid}")]
-    public IActionResult Delete(Guid id)
+    public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
     {
-        return service.Delete(id) ? NoContent() : NotFound();
+        return await service.DeleteAsync(id, cancellationToken) ? NoContent() : NotFound();
     }
 }

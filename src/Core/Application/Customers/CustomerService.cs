@@ -11,52 +11,54 @@ public sealed class CustomerService
         this.repository = repository;
     }
 
-    public IReadOnlyCollection<CustomerResponse> GetAll()
+    public async Task<IReadOnlyCollection<CustomerResponse>> GetAllAsync(CancellationToken cancellationToken = default)
     {
-        return repository.GetAll().Select(CustomerResponse.FromDomain).ToArray();
+        var customers = await repository.GetAllAsync(cancellationToken);
+        return customers.Select(CustomerResponse.FromDomain).ToArray();
     }
 
-    public CustomerResponse? GetById(Guid id)
+    public async Task<CustomerResponse?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        return repository.GetById(id) is { } customer
+        return await repository.GetByIdAsync(id, cancellationToken) is { } customer
             ? CustomerResponse.FromDomain(customer)
             : null;
     }
 
-    public CustomerResponse Create(CreateCustomerRequest request)
+    public async Task<CustomerResponse> CreateAsync(CreateCustomerRequest request, CancellationToken cancellationToken = default)
     {
         var customer = Customer.Create(request.Name, request.Email);
 
-        if (repository.GetByEmail(customer.Email) is not null)
+        if (await repository.GetByEmailAsync(customer.Email, cancellationToken) is not null)
         {
             throw new InvalidOperationException("A customer with this email already exists.");
         }
 
-        return CustomerResponse.FromDomain(repository.Add(customer));
+        return CustomerResponse.FromDomain(await repository.AddAsync(customer, cancellationToken));
     }
 
-    public CustomerResponse? Update(Guid id, UpdateCustomerRequest request)
+    public async Task<CustomerResponse?> UpdateAsync(Guid id, UpdateCustomerRequest request, CancellationToken cancellationToken = default)
     {
-        var customer = repository.GetById(id);
+        var customer = await repository.GetByIdAsync(id, cancellationToken);
         if (customer is null)
         {
             return null;
         }
 
         var email = request.Email.Trim().ToLowerInvariant();
-        var existingCustomer = repository.GetByEmail(email);
+        var existingCustomer = await repository.GetByEmailAsync(email, cancellationToken);
         if (existingCustomer is not null && existingCustomer.Id != id)
         {
             throw new InvalidOperationException("A customer with this email already exists.");
         }
 
         customer.Update(request.Name, request.Email);
+        await repository.SaveChangesAsync(cancellationToken);
         return CustomerResponse.FromDomain(customer);
     }
 
-    public bool Delete(Guid id)
+    public Task<bool> DeleteAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        return repository.Delete(id);
+        return repository.DeleteAsync(id, cancellationToken);
     }
 }
 
